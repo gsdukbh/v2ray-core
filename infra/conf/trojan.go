@@ -21,7 +21,6 @@ type TrojanServerTarget struct {
 	Password string   `json:"password"`
 	Email    string   `json:"email"`
 	Level    byte     `json:"level"`
-	Flow     string   `json:"flow"`
 }
 
 // TrojanClientConfig is configuration of trojan servers
@@ -50,7 +49,6 @@ func (c *TrojanClientConfig) Build() (proto.Message, error) {
 		}
 		account := &trojan.Account{
 			Password: rec.Password,
-			Flow:     rec.Flow,
 		}
 		trojan := &protocol.ServerEndpoint{
 			Address: rec.Address.Build(),
@@ -86,7 +84,6 @@ type TrojanUserConfig struct {
 	Password string `json:"password"`
 	Level    byte   `json:"level"`
 	Email    string `json:"email"`
-	Flow     string `json:"flow"`
 }
 
 // TrojanServerConfig is Inbound configuration
@@ -104,7 +101,6 @@ func (c *TrojanServerConfig) Build() (proto.Message, error) {
 		user := new(protocol.User)
 		account := &trojan.Account{
 			Password: rawUser.Password,
-			Flow:     rawUser.Flow,
 		}
 
 		user.Email = rawUser.Email
@@ -148,7 +144,7 @@ func (c *TrojanServerConfig) Build() (proto.Message, error) {
 				switch fb.Dest[0] {
 				case '@', '/':
 					fb.Type = "unix"
-					if fb.Dest[0] == '@' && len(fb.Dest) > 1 && fb.Dest[1] == '@' && runtime.GOOS == "linux" {
+					if fb.Dest[0] == '@' && len(fb.Dest) > 1 && fb.Dest[1] == '@' && (runtime.GOOS == "linux" || runtime.GOOS == "android") {
 						fullAddr := make([]byte, len(syscall.RawSockaddrUnix{}.Path)) // may need padding to work with haproxy
 						copy(fullAddr, fb.Dest[1:])
 						fb.Dest = string(fullAddr)
